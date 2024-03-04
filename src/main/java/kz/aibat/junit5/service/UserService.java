@@ -4,7 +4,6 @@ import kz.aibat.junit5.dto.User;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -21,6 +20,8 @@ public class UserService {
     }
 
     public Optional<User> login(String username, String password) {
+        if(username == null || password == null)
+            throw new IllegalArgumentException("username or password is null");
         return users.stream()
                 .filter(user -> user.getUsername().equals(username))
                 .filter(user -> user.getPassword().equals(password))

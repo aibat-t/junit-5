@@ -1,7 +1,6 @@
 package kz.aibat.junit5.service;
 
 import kz.aibat.junit5.dto.User;
-import org.assertj.core.api.ClassBasedNavigableIterableAssert;
 import org.junit.jupiter.api.*;
 
 import java.util.Map;
@@ -9,6 +8,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 public class UserServiceTest {
@@ -47,6 +47,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @Tag("login")
     void loginSuccessIfUserExists() {
         userService.add(IVAN);
         Optional<User> userOp = userService.login(IVAN.getUsername(), IVAN.getPassword());
@@ -54,6 +55,20 @@ public class UserServiceTest {
     }
 
     @Test
+    @Tag("login")
+    void throwExceptionIfUserameOrPasswordIsNull() {
+        assertAll(
+                () -> {
+                    var exception = assertThrows(IllegalArgumentException.class, () -> userService.login(null, "dummy"));
+                    assertThat(exception.getMessage()).isEqualTo("username or password is null");
+                },
+                () -> assertThrows(IllegalArgumentException.class, () -> userService.login("dummy", null))
+        );
+
+    }
+
+    @Test
+    @Tag("login")
     void loginUnsuccessIfUserExists() {
         userService.add(IVAN);
         Optional<User> userOp = userService.login(IVAN.getUsername(), "dummy");
@@ -61,6 +76,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @Tag("login")
     void loginUnsuccessIfUserDoesNotExists() {
         userService.add(IVAN);
         Optional<User> userOp = userService.login("dummy", IVAN.getPassword());
