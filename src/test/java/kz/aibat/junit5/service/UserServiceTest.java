@@ -1,13 +1,11 @@
-package kz.aibat.junit5;
+package kz.aibat.junit5.service;
 
 import kz.aibat.junit5.dto.User;
-import kz.aibat.junit5.service.UserService;
 import org.junit.jupiter.api.*;
-
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class Junit5Test {
+class UserServiceTest {
 
     private UserService userService;
 
