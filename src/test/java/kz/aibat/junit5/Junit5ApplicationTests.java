@@ -20,9 +20,6 @@ class Junit5ApplicationTests {
 
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
                 .selectors(DiscoverySelectors.selectPackage("kz.aibat.junit5.service"))
-                .filters(
-                        TagFilter.excludeTags("login")
-                )
                 .build();
         launcher.execute(request, summary);
         try (var writer = new PrintWriter(System.out)) {

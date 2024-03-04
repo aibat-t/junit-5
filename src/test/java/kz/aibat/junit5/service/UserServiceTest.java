@@ -47,43 +47,6 @@ public class UserServiceTest {
     }
 
     @Test
-    @Tag("login")
-    void loginSuccessIfUserExists() {
-        userService.add(IVAN);
-        Optional<User> userOp = userService.login(IVAN.getUsername(), IVAN.getPassword());
-        assertThat(userOp).isPresent();
-    }
-
-    @Test
-    @Tag("login")
-    void throwExceptionIfUserameOrPasswordIsNull() {
-        assertAll(
-                () -> {
-                    var exception = assertThrows(IllegalArgumentException.class, () -> userService.login(null, "dummy"));
-                    assertThat(exception.getMessage()).isEqualTo("username or password is null");
-                },
-                () -> assertThrows(IllegalArgumentException.class, () -> userService.login("dummy", null))
-        );
-
-    }
-
-    @Test
-    @Tag("login")
-    void loginUnsuccessIfUserExists() {
-        userService.add(IVAN);
-        Optional<User> userOp = userService.login(IVAN.getUsername(), "dummy");
-        assertThat(userOp).isEmpty();
-    }
-
-    @Test
-    @Tag("login")
-    void loginUnsuccessIfUserDoesNotExists() {
-        userService.add(IVAN);
-        Optional<User> userOp = userService.login("dummy", IVAN.getPassword());
-        assertThat(userOp).isEmpty();
-    }
-
-    @Test
     void usersConvertedToMapById() {
         userService.add(IVAN, PETR);
 
@@ -105,5 +68,42 @@ public class UserServiceTest {
     @AfterAll
     static void afterAll() {
         System.out.println("after ALL!!!!");
+    }
+
+    @Nested
+    @Tag("login")
+    class LoginTest {
+        @Test
+        void loginSuccessIfUserExists() {
+            userService.add(IVAN);
+            Optional<User> userOp = userService.login(IVAN.getUsername(), IVAN.getPassword());
+            assertThat(userOp).isPresent();
+        }
+
+        @Test
+        void throwExceptionIfUserameOrPasswordIsNull() {
+            assertAll(
+                    () -> {
+                        var exception = assertThrows(IllegalArgumentException.class, () -> userService.login(null, "dummy"));
+                        assertThat(exception.getMessage()).isEqualTo("username or password is null");
+                    },
+                    () -> assertThrows(IllegalArgumentException.class, () -> userService.login("dummy", null))
+            );
+
+        }
+
+        @Test
+        void loginUnsuccessIfUserExists() {
+            userService.add(IVAN);
+            Optional<User> userOp = userService.login(IVAN.getUsername(), "dummy");
+            assertThat(userOp).isEmpty();
+        }
+
+        @Test
+        void loginUnsuccessIfUserDoesNotExists() {
+            userService.add(IVAN);
+            Optional<User> userOp = userService.login("dummy", IVAN.getPassword());
+            assertThat(userOp).isEmpty();
+        }
     }
 }
