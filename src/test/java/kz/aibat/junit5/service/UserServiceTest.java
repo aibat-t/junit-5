@@ -3,10 +3,14 @@ package kz.aibat.junit5.service;
 import kz.aibat.junit5.dto.User;
 import org.junit.jupiter.api.*;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserServiceTest {
+public class UserServiceTest {
 
+    static final User IVAN = User.builder().id(1).username("Ivan").password("123").build();
+    static final User PETR = User.builder().id(2).username("Petr").password("111").build();
     private UserService userService;
 
     @BeforeAll
@@ -30,12 +34,33 @@ class UserServiceTest {
     @Test
      void userSizeIfUserAdded() {
         System.out.println("Test1");
-        userService.add(new User());
-        userService.add(new User());
+        userService.add(IVAN);
+        userService.add(PETR);
 
         var users = userService.getAll();
 
         assertEquals(2, users.size());
+    }
+
+    @Test
+    void loginSuccessIfUserExists() {
+        userService.add(IVAN);
+        Optional<User> userOp = userService.login(IVAN.getUsername(), IVAN.getPassword());
+        assertTrue(userOp.isPresent());
+    }
+
+    @Test
+    void loginUnsuccessIfUserExists() {
+        userService.add(IVAN);
+        Optional<User> userOp = userService.login(IVAN.getUsername(), "dummy");
+        assertTrue(userOp.isEmpty());
+    }
+
+    @Test
+    void loginUnsuccessIfUserDoesNotExists() {
+        userService.add(IVAN);
+        Optional<User> userOp = userService.login("dummy", IVAN.getPassword());
+        assertTrue(userOp.isEmpty());
     }
 
     @AfterEach
