@@ -1,11 +1,15 @@
 package kz.aibat.junit5.service;
 
 import kz.aibat.junit5.dto.User;
+import org.assertj.core.api.ClassBasedNavigableIterableAssert;
 import org.junit.jupiter.api.*;
 
+import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 
 public class UserServiceTest {
 
@@ -28,7 +32,7 @@ public class UserServiceTest {
     void shouldBeEmptyIfNoUserAdded() {
         System.out.println("Test1");
         var users = userService.getAll();
-        assertTrue(users.isEmpty(), "User list should be empty");
+        assertThat(users).isEmpty();
     }
 
     @Test
@@ -39,28 +43,42 @@ public class UserServiceTest {
 
         var users = userService.getAll();
 
-        assertEquals(2, users.size());
+        assertThat(users).hasSize(2);
     }
 
     @Test
     void loginSuccessIfUserExists() {
         userService.add(IVAN);
         Optional<User> userOp = userService.login(IVAN.getUsername(), IVAN.getPassword());
-        assertTrue(userOp.isPresent());
+        assertThat(userOp).isPresent();
     }
 
     @Test
     void loginUnsuccessIfUserExists() {
         userService.add(IVAN);
         Optional<User> userOp = userService.login(IVAN.getUsername(), "dummy");
-        assertTrue(userOp.isEmpty());
+        assertThat(userOp).isEmpty();
     }
 
     @Test
     void loginUnsuccessIfUserDoesNotExists() {
         userService.add(IVAN);
         Optional<User> userOp = userService.login("dummy", IVAN.getPassword());
-        assertTrue(userOp.isEmpty());
+        assertThat(userOp).isEmpty();
+    }
+
+    @Test
+    void usersConvertedToMapById() {
+        userService.add(IVAN, PETR);
+
+        Map<Integer, User> users = userService.convertToMap();
+
+        assertAll(
+                () -> assertThat(users).containsKeys(IVAN.getId(), PETR.getId()),
+                () -> assertThat(users).containsValues(IVAN, PETR)
+        );
+
+
     }
 
     @AfterEach
