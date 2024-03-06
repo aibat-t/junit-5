@@ -7,8 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
@@ -18,7 +17,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(
@@ -28,6 +27,10 @@ public class UserServiceTest {
 
     static final User IVAN = User.builder().id(1).username("Ivan").password("123").build();
     static final User PETR = User.builder().id(2).username("Petr").password("111").build();
+
+    @Captor
+    private ArgumentCaptor<Integer> argumentCaptor;
+    @InjectMocks
     private UserService userService;
     @Mock
     private UserDao userDao;
@@ -39,16 +42,27 @@ public class UserServiceTest {
 
     @BeforeEach
     void beforeEach() {
+        doReturn(true).when(userDao).delete(IVAN.getId());
         System.out.println("Before each");
-        this.userService = new UserService(userDao);
+    }
+
+    @Test
+    void throwExceptionIfDatabaseIsNotAvailable() {
+        doThrow(RuntimeException.class).when(userDao).delete(IVAN.getId());
+        assertThrows(RuntimeException.class, () -> userService.delete(IVAN.getId()));
     }
 
     @Test
     void shouldDeleteExistedUser() {
         userService.add(IVAN);
-        Mockito.doReturn(true).when(userDao).delete(Mockito.any());
+
 //        when(userDao.delete(Mockito.anyInt())).thenReturn(true);
+
         var deleteResult = userService.delete(IVAN.getId());
+
+        verify(userDao, Mockito.times(1)).delete(argumentCaptor.capture());
+
+        assertThat(argumentCaptor.getValue()).isEqualTo(IVAN.getId());
         assertThat(deleteResult).isTrue();
     }
 
