@@ -1,21 +1,36 @@
 package kz.aibat.junit5.service;
 
+import kz.aibat.junit5.dao.UserDao;
 import kz.aibat.junit5.dto.User;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 
+@ExtendWith(
+        MockitoExtension.class
+)
 public class UserServiceTest {
 
     static final User IVAN = User.builder().id(1).username("Ivan").password("123").build();
     static final User PETR = User.builder().id(2).username("Petr").password("111").build();
     private UserService userService;
+    @Mock
+    private UserDao userDao;
 
     @BeforeAll
     static void beforeAll() {
@@ -25,7 +40,16 @@ public class UserServiceTest {
     @BeforeEach
     void beforeEach() {
         System.out.println("Before each");
-        userService = new UserService();
+        this.userService = new UserService(userDao);
+    }
+
+    @Test
+    void shouldDeleteExistedUser() {
+        userService.add(IVAN);
+        Mockito.doReturn(true).when(userDao).delete(Mockito.any());
+//        when(userDao.delete(Mockito.anyInt())).thenReturn(true);
+        var deleteResult = userService.delete(IVAN.getId());
+        assertThat(deleteResult).isTrue();
     }
 
     @Test
@@ -104,6 +128,27 @@ public class UserServiceTest {
             userService.add(IVAN);
             Optional<User> userOp = userService.login("dummy", IVAN.getPassword());
             assertThat(userOp).isEmpty();
+        }
+
+        @ParameterizedTest
+//        @ValueSource(strings = {
+//                "Ivan", "Petr"
+//        })
+        @MethodSource("getArgumentsForLoginTest")
+        void loginParametrizedTest(String username, String password, Optional<User> user) {
+            userService.add(IVAN, PETR);
+            var userOp = userService.login(username, password);
+
+            assertThat(userOp).isEqualTo(user);
+        }
+
+        static Stream<Arguments> getArgumentsForLoginTest() {
+            return Stream.of(
+                    Arguments.of("Ivan", "123", Optional.of(IVAN)),
+                    Arguments.of("Petr", "111", Optional.of(PETR)),
+                    Arguments.of("dummy", "111", Optional.empty()),
+                    Arguments.of("Pet", "dummy", Optional.empty())
+            );
         }
     }
 }

@@ -1,5 +1,6 @@
 package kz.aibat.junit5.service;
 
+import kz.aibat.junit5.dao.UserDao;
 import kz.aibat.junit5.dto.User;
 
 import java.util.*;
@@ -10,6 +11,15 @@ import static java.util.stream.Collectors.toMap;
 public class UserService {
 
     private final List<User> users = new ArrayList<>();
+    private final UserDao userDao;
+
+    public boolean delete(Integer userId) {
+        return userDao.delete(userId);
+    }
+
+    public UserService(UserDao userDao) {
+        this.userDao = userDao;
+    }
 
     public List<User> getAll() {
         return users;
